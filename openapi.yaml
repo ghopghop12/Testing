@@ -1,0 +1,391 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: SoundForge API — Music streaming for bots
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: stream
+    description: Audio streaming endpoints
+  - name: search
+    description: Music search endpoints
+  - name: lyrics
+    description: Lyrics endpoints
+  - name: usage
+    description: API key usage and quota
+
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /v1/stream:
+    get:
+      operationId: getStream
+      tags: [stream]
+      summary: Resolve a search query or URL to a direct audio stream link
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: query
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Search query or YouTube URL
+        - name: format
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [mp3, opus, best]
+            default: best
+          description: Preferred audio format
+      responses:
+        "200":
+          description: Stream link resolved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StreamResult"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/search:
+    get:
+      operationId: searchTracks
+      tags: [search]
+      summary: Search for tracks by query
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: query
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Search query
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 20
+            default: 5
+          description: Number of results to return
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchResults"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/lyrics:
+    get:
+      operationId: getLyrics
+      tags: [lyrics]
+      summary: Fetch lyrics for a track
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: track_id
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Track ID from a previous search or stream result
+        - name: query
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Search query to find lyrics (if no track_id)
+      responses:
+        "200":
+          description: Lyrics result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LyricsResult"
+        "404":
+          description: Lyrics not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/usage:
+    get:
+      operationId: getUsage
+      tags: [usage]
+      summary: Get API key usage and quota information
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Usage information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UsageResult"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/keys:
+    post:
+      operationId: createApiKey
+      tags: [usage]
+      summary: Create a new API key (free tier)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateKeyRequest"
+      responses:
+        "201":
+          description: API key created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateKeyResponse"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    StreamResult:
+      type: object
+      properties:
+        track_id:
+          type: string
+          description: Unique identifier for this track
+        title:
+          type: string
+        artist:
+          type: string
+        duration:
+          type: integer
+          description: Duration in seconds
+        stream_url:
+          type: string
+          description: Direct playable audio URL
+        expires_in:
+          type: integer
+          description: Seconds until this URL expires
+        thumbnail:
+          type: string
+          description: Thumbnail image URL
+        source_url:
+          type: string
+          description: Original YouTube URL
+      required:
+        - track_id
+        - title
+        - duration
+        - stream_url
+        - expires_in
+
+    TrackItem:
+      type: object
+      properties:
+        track_id:
+          type: string
+        title:
+          type: string
+        artist:
+          type: string
+        duration:
+          type: integer
+        thumbnail:
+          type: string
+        source_url:
+          type: string
+      required:
+        - track_id
+        - title
+        - duration
+
+    SearchResults:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/TrackItem"
+        total:
+          type: integer
+        query:
+          type: string
+      required:
+        - results
+        - total
+        - query
+
+    LyricsResult:
+      type: object
+      properties:
+        track_id:
+          type: string
+        title:
+          type: string
+        artist:
+          type: string
+        lyrics:
+          type: string
+        synced:
+          type: boolean
+          description: Whether lyrics are time-synced
+        source:
+          type: string
+      required:
+        - lyrics
+        - synced
+
+    UsageResult:
+      type: object
+      properties:
+        key_id:
+          type: string
+        plan:
+          type: string
+          enum: [free, pro, unlimited]
+        requests_today:
+          type: integer
+        requests_limit:
+          type: integer
+        requests_remaining:
+          type: integer
+        reset_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - key_id
+        - plan
+        - requests_today
+        - requests_limit
+        - requests_remaining
+        - reset_at
+
+    CreateKeyRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        name:
+          type: string
+      required:
+        - email
+
+    CreateKeyResponse:
+      type: object
+      properties:
+        api_key:
+          type: string
+        key_id:
+          type: string
+        plan:
+          type: string
+        daily_limit:
+          type: integer
+        message:
+          type: string
+      required:
+        - api_key
+        - key_id
+        - plan
+        - daily_limit
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        code:
+          type: integer
+      required:
+        - error
+        - message
