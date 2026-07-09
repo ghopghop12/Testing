@@ -1,0 +1,2 @@
+- [yt-dlp NixOS install](ytdlp-nixos.md) — pip fails in NixOS; download the binary from GitHub releases directly instead
+- [yt-dlp NDJSON parsing](ytdlp-ndjson.md) — multi-result searches emit newline-delimited JSON; must split+parse per line, not single JSON.parse
