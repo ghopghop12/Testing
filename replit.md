@@ -1,10 +1,10 @@
-# SoundForge API
+# DevilCoder API
 
 A music streaming API for bot developers — one HTTP call returns a direct, playable audio link powered by yt-dlp. No cookies, no browser automation, no rate-limit roulette. Built for Telegram and Discord bot developers.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/soundforge run dev` — run the landing page frontend (port auto-assigned)
+- `pnpm --filter @workspace/devilcoder run dev` — run the landing page frontend (port auto-assigned)
 - `pnpm --filter @workspace/api-server run dev` — run the API server (port 8080)
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
@@ -16,7 +16,7 @@ A music streaming API for bot developers — one HTTP call returns a direct, pla
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
-- Frontend: React + Vite (artifacts/soundforge)
+- Frontend: React + Vite (artifacts/devilcoder)
 - API: Express 5 (artifacts/api-server)
 - DB: PostgreSQL + Drizzle ORM
 - Audio: yt-dlp binary for YouTube stream resolution + search
@@ -26,7 +26,7 @@ A music streaming API for bot developers — one HTTP call returns a direct, pla
 
 ## Where things live
 
-- `artifacts/soundforge/` — React landing page + demo page
+- `artifacts/devilcoder/` — React landing page + demo page
 - `artifacts/api-server/src/routes/v1/` — stream, search, lyrics, usage, keys routes
 - `artifacts/api-server/src/lib/ytdlp.ts` — yt-dlp wrapper with SSRF guard
 - `artifacts/api-server/src/lib/auth.ts` — Bearer token auth + atomic quota enforcement
@@ -64,4 +64,4 @@ _Populate as you build — explicit user instructions worth remembering across s
 ## Pointers
 
 - See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
-- render.yaml at the repo root configures two Render services: soundforge-api (web service) and soundforge-frontend (static site)
+- render.yaml at the repo root configures two Render services: devilcoder-api (web service) and devilcoder-frontend (static site)
