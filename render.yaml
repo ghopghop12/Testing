@@ -37,8 +37,8 @@ services:
       pnpm install --frozen-lockfile
       pnpm run typecheck:libs
       pnpm --filter @workspace/api-spec run codegen
-      BASE_PATH=/ pnpm --filter @workspace/soundforge run build
-    staticPublishPath: artifacts/soundforge/dist/public
+      BASE_PATH=/ pnpm --filter @workspace/devilcoder run build
+    staticPublishPath: artifacts/devilcoder/dist/public
     routes:
       - type: rewrite
         source: /api/*
